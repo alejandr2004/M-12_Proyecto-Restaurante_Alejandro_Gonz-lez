@@ -3,58 +3,74 @@ session_start();
 include '../db/conexion.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $codigo_empleado = trim($_POST['codigo_empleado']);
+    $codigo_usuario = trim($_POST['codigo_usuario']);
     $pwd = trim($_POST['pwd']);
 
-    $_SESSION['codigo_empleado'] = $codigo_empleado;
+    // Almacenamos los datos temporalmente en la sesión para validarlos después
+    $_SESSION['codigo_usuario'] = $codigo_usuario;
     $_SESSION['pwd'] = $pwd;
 
-    if (empty($codigo_empleado) || empty($pwd)) {
+    // Validar si los campos están vacíos
+    if (empty($codigo_usuario) || empty($pwd)) {
         $_SESSION['error'] = "Ambos campos son obligatorios.";
         header("Location: ../index.php");
         exit();
     }
 
-    $sql = "SELECT * FROM tbl_camarero WHERE codigo_camarero = ?";
-    $stmt = mysqli_prepare($conn, $sql);
-    
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "s", $codigo_empleado);
-        mysqli_stmt_execute($stmt);
+    try {
+        // Consulta preparada para obtener los datos del usuario
+        $sql = "SELECT * FROM tbl_usuario WHERE nombre_usuario = :codigo_usuario";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':codigo_usuario', $codigo_usuario, PDO::PARAM_STR);
+        $stmt->execute();
 
-        $result = mysqli_stmt_get_result($stmt);
+        // Obtener el resultado
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (mysqli_num_rows($result) > 0) {
-            $usuario = mysqli_fetch_assoc($result);
+        var_dump($result);
+        echo $_SESSION['codigo_usuario'];
+        echo $_SESSION['pwd'];
 
-            if (password_verify($pwd, $usuario['password_camarero'])) {
+        if ($result) {
+            // Verificar la contraseña utilizando password_verify
+                // Inicio de sesión exitoso
                 $_SESSION['loggedin'] = true;
-                $_SESSION['usuario_id'] = $usuario['id_camarero'];
-                $_SESSION['nombre_usuario'] = $usuario['nombre_camarero'];
+                $_SESSION['usuario_id'] = $result['id_usuario'];
+                $_SESSION['nombre_usuario'] = $result['nombre_usuario'];
 
-                unset($_SESSION['codigo_empleado']);
+                echo $_SESSION['usuario_id'];
+
+                // Eliminar las variables temporales de sesión
+                unset($_SESSION['codigo_usuario']);
                 unset($_SESSION['pwd']);
                 unset($_SESSION['error']);
 
-                header("Location: ../public/dashboard.php");
+                // Redirigir a la página correspondiente según el rol del usuario
+                if ($result['rol_usuario'] == "Administrador") {
+                    header("Location: ../public/CRUD_salas.php");
+                } else if ($result['rol_usuario'] == "Camarero") {
+                    header("Location: ../public/dashboard.php");
+                } else {
+                    header("Location: ../public/fichar.php");
+                }
+
                 exit();
-            } else {
-                $_SESSION['error'] = "Los datos introducidos son incorrectos.";
-                header("Location: ../index.php");
-                exit();
-            }
         } else {
+            // Usuario no encontrado
             $_SESSION['error'] = "Los datos introducidos son incorrectos.";
             header("Location: ../index.php");
             exit();
         }
-    } else {
-        $_SESSION['error'] = "Error en la consulta: " . mysqli_error($conn);
+    } catch (PDOException $e) {
+        // Manejo de errores de conexión o consulta
+        $_SESSION['error'] = "Error en la base de datos: " . $e->getMessage();
         header("Location: ../index.php");
         exit();
     }
 } else {
+    // Si no se recibe un formulario POST, redirigir al login
     header("Location: ../public/login.php");
     exit();
 }
 ?>
+

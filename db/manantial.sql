@@ -5,8 +5,14 @@ USE elmanantial;
 CREATE TABLE tbl_sala (
     id_sala INT PRIMARY KEY,
     nombre_sala VARCHAR(25) NOT NULL,
-    tipo_sala ENUM('terraza', 'comedor', 'privada') NOT NULL,
-    capacidad_total INT NOT NULL
+    tipo_sala VARCHAR (20),
+    capacidad_total INT NOT NULL,
+    FOREIGN KEY (tipo_sala) REFERENCES tbl_tipo_sala(nombre_tipo_sala)
+);
+
+CREATE TABLE tbl_tipo_sala (
+    id_tipo_sala INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nombre_tipo_sala VARCHAR(20)
 );
 
 CREATE TABLE tbl_mesa (
@@ -17,11 +23,19 @@ CREATE TABLE tbl_mesa (
     FOREIGN KEY (id_sala) REFERENCES tbl_sala(id_sala)
 );
 
-CREATE TABLE tbl_camarero (
-    id_camarero INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    nombre_camarero VARCHAR(30) NOT NULL,
-    codigo_camarero CHAR(4) NOT NULL UNIQUE,
-    password_camarero VARCHAR(255) NOT NULL
+CREATE TABLE tbl_usuario ( 
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nombre_usuario VARCHAR(30) NOT NULL,
+    nombre_real VARCHAR(30) NOT NULL,
+    apellidos VARCHAR(40) NOT NULL,
+    pwd_usuario VARCHAR(20) NOT NULL,
+    rol_usuario VARCHAR(20) NOT NULL,
+    FOREIGN KEY (rol_usuario) REFERENCES tbl_rol(rol)
+);
+
+CREATE TABLE tbl_rol (
+    id_rol INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    rol VARCHAR(20)
 );
 
 CREATE TABLE tbl_ocupacion (
@@ -33,6 +47,33 @@ CREATE TABLE tbl_ocupacion (
     FOREIGN KEY (id_mesa) REFERENCES tbl_mesa(id_mesa),
     FOREIGN KEY (id_camarero) REFERENCES tbl_camarero(id_camarero)
 );
+
+CREATE TABLE tbl_reserva (
+    id_reserva INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    dia_reserva INT NOT NULL,
+    id_mesa INT NOT NULL,
+    id_franja INT NOT NULL,
+    FOREIGN KEY (id_mesa) REFERENCES tbl_mesa(id_mesa),
+    FOREIGN KEY (id_franja) REFERENCES tbl_franjas_horarias(id_franja)
+);
+
+CREATE TABLE tbl_franjas_horarias (
+    id_franja INT AUTO_INCREMENT PRIMARY KEY,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL,
+    id_mesa INT NOT NULL,
+    FOREIGN KEY (id_mesa) REFERENCES tbl_mesa(id_mesa)
+);
+
+CREATE TABLE tbl_stock (
+    id_stock INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    id_sala INT NOT NULL,
+    cantidad_mesas INT NOT NULL,
+    cantidad_stock INT NOT NULL,
+    FOREIGN KEY (id_sala) REFERENCES tbl_sala(id_sala)
+);
+
+
 
 INSERT INTO tbl_sala (id_sala, nombre_sala, tipo_sala, capacidad_total) VALUES
 (1, 'terraza_principal', 'terraza', 14),
@@ -93,8 +134,38 @@ INSERT INTO tbl_mesa (id_sala, num_sillas_mesa, estado_mesa) VALUES
 -- Sala Privada 4
 (9, 10, 'libre');
 
-INSERT INTO tbl_camarero (nombre_camarero, codigo_camarero, password_camarero) VALUES
-('Christian Monrabal', 'C001', '$2a$12$NtbM8IYMhhkOlUl9uZ7XMenWrzmSEp6DcFfQijiMs/cmjwN2MP2bi'), -- qweQWE123
-('Adrian Martin', 'C002', '$2a$12$DB3.O4aga98EH./zW9P9beKfklJkTcXMY0AnL3T6nheQhpM3usreO'), -- asdASD456
-('Alejandro González ', 'C003', '$2a$12$b509yhiIiUsHDKfE8HdNnea.1OEVhd4ukrnc54axOg5TDuDE2MNgC'),-- zxcZXC789
-('Oriol Godoy', 'C004', '$2b$12$v79zM4PPHJuyzcydT8SYmOMKT0VaBS.fQNgrLphkto3TRW00VDoYy'); -- qazQAZ000
+INSERT INTO tbl_rol (rol) VALUES
+('Administrador'),
+('Camarero'),
+('Recepcionista'),
+('Jefe de Sala'),
+('Chef'),
+('Ayudante de Cocina');
+
+-- Insertar usuarios con contraseñas adaptadas para cumplir las validaciones
+-- Administrador
+INSERT INTO tbl_usuario (nombre_usuario, nombre_real, apellidos, pwd_usuario, rol_usuario) VALUES
+('admin01', 'Juan', 'Pérez', 'Admin1234', 'Administrador');
+
+-- Camarero
+INSERT INTO tbl_usuario (nombre_usuario, nombre_real, apellidos, pwd_usuario, rol_usuario) VALUES
+('camarero01', 'Carlos', 'García', 'Camarero123', 'Camarero');
+INSERT INTO tbl_usuario (nombre_usuario, nombre_real, apellidos, pwd_usuario, rol_usuario) VALUES
+('camarero02', 'Laura', 'Sánchez', 'Camarero456', 'Camarero');
+
+-- Recepcionista
+INSERT INTO tbl_usuario (nombre_usuario, nombre_real, apellidos, pwd_usuario, rol_usuario) VALUES
+('recepcionista01', 'María', 'López', 'Recepcionista1', 'Recepcionista');
+
+-- Jefe de Sala
+INSERT INTO tbl_usuario (nombre_usuario, nombre_real, apellidos, pwd_usuario, rol_usuario) VALUES
+('jefe_sala01', 'Pedro', 'Martínez', 'JefeSala123', 'Jefe de Sala');
+
+-- Chef
+INSERT INTO tbl_usuario (nombre_usuario, nombre_real, apellidos, pwd_usuario, rol_usuario) VALUES
+('chef01', 'Ana', 'Rodríguez', 'Chef1234', 'Chef');
+
+-- Ayudante de Cocina
+INSERT INTO tbl_usuario (nombre_usuario, nombre_real, apellidos, pwd_usuario, rol_usuario) VALUES
+('ayudante01', 'Luis', 'Hernández', 'Ayudante123', 'Ayudante de Cocina');
+

@@ -1,0 +1,116 @@
+/* Estilo para las tarjetas de las salas */
+.tarjeta-sala {
+    display: inline-block;
+    width: 30%;
+    margin: 1%;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.tarjeta-sala:hover {
+    transform: scale(1.05);
+}
+
+.tarjeta {
+    background-size: cover;
+    background-position: center;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.mesas-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.mesa-card {
+    width: 30%;
+    margin: 10px 0;
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.mesa-card.libre {
+    background-color: #d4edda;
+}
+
+.mesa-card.ocupada {
+    background-color: #f8d7da;
+}
+
+.mesa-info {
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para los botones de acción */
+/* Estilos para los botones de acción */
+.action-buttons {
+    display: flex;
+    justify-content: flex-start; /* Alinea los botones a la izquierda */
+    gap: 10px; /* Espacio entre los botones */
+    margin-bottom: 20px; /* Espacio debajo de los botones */
+}
+
+.action-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.action-button:hover {
+    background-color: #0056b3;
+}
+
+.action-button.delete {
+    background-color: #dc3545; /* Color para el botón de eliminar */
+}
+
+.action-button.delete:hover {
+    background-color: #c82333;
+}
+
+.action-button.modify {
+    background-color: #ffc107; /* Color para el botón de modificar */
+}
+
+.action-button.modify:hover {
+    background-color: #e0a800;
+}
+
+.action-button.back {
+    background-color: #28a745; /* Color para el botón de volver */
+}
+
+.action-button.back:hover {
+    background-color: #218838;
+}

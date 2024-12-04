@@ -2,7 +2,6 @@
 session_start();
 
 if (isset($_SESSION['loggedin'])) {
-
     header("Location: ./public/dashboard.php");
     exit();
 }
@@ -22,7 +21,7 @@ if (isset($_SESSION['loggedin'])) {
         <img src="./img/icon.png" class="icon">
         <form class="login-form" action="./private/access.php" method="POST" id="loginForm">
             <label for="codigo_empleado">Código de empleado</label>
-            <input type="text" id="codigo_empleado" name="codigo_empleado" placeholder="Introduce el código de empleado" onblur="validar_codigo()" value="<?php echo isset($_SESSION['codigo_empleado']) ? htmlspecialchars($_SESSION['codigo_empleado']) : ''; ?>">
+            <input type="text" id="codigo_empleado" name="codigo_usuario" placeholder="Introduce el código de empleado" onblur="validar_codigo()" value="<?php echo isset($_SESSION['codigo_empleado']) ? htmlspecialchars($_SESSION['codigo_empleado']) : ''; ?>">
             <span id="codigo_empleado_error" class="error-message"></span>
             
             <label for="pwd">Contraseña</label>
