@@ -1,10 +1,10 @@
 <?php
 session_start();
 
-if (isset($_SESSION['loggedin'])) {
-    header("Location: ./public/dashboard.php");
-    exit();
-}
+// if (isset($_SESSION['loggedin'])) {
+//     header("Location: ./public/dashboard.php");
+//     exit();
+// }
 ?>
 
 <!DOCTYPE html>

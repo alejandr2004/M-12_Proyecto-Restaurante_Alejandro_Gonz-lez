@@ -1,0 +1,173 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+/* Contenedor principal */
+.container {
+    max-width: 100%;
+    padding: 15px;
+}
+
+/* Encabezado */
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Formulario de filtros */
+form {
+    margin-bottom: 20px;
+}
+
+/* Inputs y selectores */
+input[type="text"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Botón para añadir usuario */
+a.btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    text-align: center;
+    border-radius: 5px;
+}
+
+a.btn-primary {
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+}
+
+a.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+a.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+}
+
+a.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Tabla de usuarios */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f1f1f1;
+}
+
+/* Botones de acciones en la tabla */
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.875rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: white;
+    border: none;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 768px) {
+    /* Ajustes para la tabla en pantallas pequeñas */
+    table th, table td {
+        display: block;
+        width: 100%;
+        text-align: right;
+    }
+
+    /* Cambiar nombres de campos en móviles */
+    table th:nth-child(1):before {
+        content: "ID: ";
+    }
+
+    table th:nth-child(2):before {
+        content: "User: ";
+    }
+
+    table th:nth-child(3):before {
+        content: "Nombre: ";
+    }
+
+    table th:nth-child(4):before {
+        content: "Apellidos: ";
+    }
+
+    table th:nth-child(5):before {
+        content: "PWD: ";
+    }
+
+    table th:nth-child(6):before {
+        content: "Rol: ";
+    }
+
+    table th:nth-child(7):before {
+        content: "Acciones: ";
+    }
+}
+
+/* Estilos adicionales para dispositivos móviles pequeños */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+    .btn, a.btn {
+        padding: 8px;
+    }
+}
+
+
+

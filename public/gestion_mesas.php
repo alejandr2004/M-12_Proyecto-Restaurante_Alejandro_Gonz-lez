@@ -1,101 +1,90 @@
 <?php
 session_start();
-include_once '../db/conexion.php';
+include '../db/conexion.php';
 
-if (!isset($_SESSION['loggedin'])) {
+// Verificamos que el usuario esté logueado
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header("Location: ../index.php");
     exit();
 }
 
-$sala = ''; // Inicializa la variable sala
-$mesas = [];
+if ($_SESSION['rol_usuario'] != 'Camarero') {
+    header("Location: ../index.php");
+    exit();
+}
 
-include_once '../private/gestion_salas.php';
+// Obtener el nombre de la sala desde la URL
+// $sala_nombre = isset($_POST['sala']) ? $_POST['sala'] : '';
+if(isset($_POST["sala"])){
+    $sala_nombre=$_POST["sala"];
+}else if(isset($_GET["sala"])){
+    $sala_nombre=$_GET["sala"];
+}else{
+    $sala_nombre="";
+}
 
-if (isset($_GET['sala'])) {
-    $sala = $_GET['sala'];
+// Consultamos las mesas de la sala seleccionada
+$sql = "SELECT m.id_mesa, m.num_sillas_mesa, m.estado_mesa
+        FROM tbl_mesa m
+        JOIN tbl_sala s ON m.id_sala = s.id_sala
+        WHERE s.nombre_sala = :sala_nombre";
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(':sala_nombre', $sala_nombre, PDO::PARAM_STR);
+$stmt->execute();
+$mesas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Consulta para obtener las mesas de la sala seleccionada
-    $sql = "SELECT * FROM tbl_mesa WHERE id_sala = :id_sala";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':id_sala', $sala, PDO::PARAM_INT);
+// Obtener el nombre completo de la sala
+$sql_sala = "SELECT nombre_sala FROM tbl_sala WHERE nombre_sala = :sala_nombre";
+$stmt_sala = $conn->prepare($sql_sala);
+$stmt_sala->bindParam(':sala_nombre', $sala_nombre, PDO::PARAM_STR);
+$stmt_sala->execute();
+$sala_data = $stmt_sala->fetch(PDO::FETCH_ASSOC);
 
-    if ($stmt->execute()) {
-        $mesas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } else {
-        die("Error al obtener las mesas.");
-    }
+if ($sala_data) {
+    $sala_nombre_completo = $sala_data['nombre_sala'];
+} else {
+    echo "Sala no encontrada.";
+    exit();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seleccionar mesa</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="../css/gestion_mesas.css">
-    <link rel="shortcut icon" href="../img/icon.png" type="image/x-icon">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Mesas de la Sala <?php echo $sala_nombre_completo; ?></title>
+    <link rel="stylesheet" href="../css/detalle_sala.css">
 </head>
 <body>
-    <div class="navbar">
-        <a href="../index.php">
-            <img src="../img/icon.png" class="icon" alt="Icono">
-        </a>
-        <div class="user-info">
-            <div class="dropdown">
-                <i class="fas fa-caret-down" style="font-size: 16px; margin-right: 10px;"></i>
-                <div class="dropdown-content">
-                    <a href="../private/logout.php">Cerrar Sesión</a>
-                </div>
-            </div>
-            <span><?php echo htmlspecialchars($_SESSION['nombre_usuario']); ?></span>
-        </div>
+    <h1>Mesas de la Sala: <?php echo $sala_nombre_completo; ?></h1>
+    <!-- Botones para acciones -->
+    <div class="action-buttons">
+        <a href="crud_salas.php" class="action-button back">Volver al CRUD de Salas</a>
     </div>
 
-    <?php if ($sala): ?>
-        <div class="slider-container">
-            <button id="prevArrow" class="arrow-btn">&lt;</button>
-            <form method="POST" action="../private/proccess_mesas.php?sala=<?php echo $sala; ?>">
-                <div class="slider" id="mesaSlider">
-                    <?php 
-                    $imagenesSillas = [
-                        2 => "../img/mesas/mesa-2.png",
-                        3 => "../img/mesas/mesa-3.png",
-                        4 => "../img/mesas/mesa-4.png",
-                        5 => "../img/mesas/mesa-5.png",
-                        6 => "../img/mesas/mesa-6.png",
-                        10 => "../img/mesas/mesa-10.png"
-                    ];
-                    ?>
-                    <?php foreach ($mesas as $mesa): ?>
-                        <div class="option <?php echo $mesa['estado_mesa'] == 'libre' ? 'libre' : 'ocupada'; ?>">
-                            <input type="radio" name="mesa" value="<?php echo $mesa['id_mesa']; ?>" id="mesa_<?php echo $mesa['id_mesa']; ?>" <?php echo $mesa['estado_mesa'] == 'ocupada' ? 'disabled' : ''; ?>>
-                            <label for="mesa_<?php echo $mesa['id_mesa']; ?>">
-                                <h2>Mesa <?php echo htmlspecialchars($mesa['id_mesa']); ?></h2>
-                                <p>Sillas: <?php echo htmlspecialchars($mesa['num_sillas_mesa']); ?></p>
-                                <?php
-                                $numSillas = $mesa['num_sillas_mesa'];
-                                $imgSrc = isset($imagenesSillas[$numSillas]) ? $imagenesSillas[$numSillas] : ""; 
-                                ?>
-                                <?php if ($imgSrc): ?>
-                                    <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="Imagen de la mesa" class="mesa-img">
-                                <?php endif; ?>
-                            </label>
-                            <?php if ($mesa['estado_mesa'] == 'ocupada'): ?>
-                                <button type="submit" class="select-button" name="desocupar" value="<?php echo $mesa['id_mesa']; ?>">Desocupar</button>
-                            <?php else: ?>
-                                <button type="submit" name="ocupar" class="select-button" value="<?php echo $mesa['id_mesa']; ?>">Ocupar</button>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
+    <div class="mesas-container">
+        <?php foreach ($mesas as $mesa): ?>
+            <div class="mesa-card <?php echo $mesa['estado_mesa'] == 'libre' ? 'libre' : 'ocupada'; ?>">
+                <div class="mesa-info">
+                    <p>Mesa #<?php echo $mesa['id_mesa']; ?></p>
+                    <p>Sillas: <?php echo $mesa['num_sillas_mesa']; ?></p>
+                    <p>Estado: <?php echo ucfirst($mesa['estado_mesa']); ?></p>
                 </div>
-            </form>
-            <button id="nextArrow" class="arrow-btn">&gt;</button>
-        </div>
-    <?php endif; ?>
-    <script src="../js/slider.js"></script>
+                <form action="../private/process_gestion_mesas.php" method="POST">
+                    <input type="hidden" name="id_mesa" value="<?php echo $mesa['id_mesa']; ?>">
+                    <input type="hidden" name="sala" value="<?php echo $sala_nombre; ?>">
+                    <?php if ($mesa['estado_mesa'] == 'libre'): ?>
+                        <button type="submit" name="action" value="ocupar">Ocupar</button>
+                        <button type="submit" name="action" value="reservar">Reservar</button>
+                    <?php else: ?>
+                        <button type="submit" name="action" value="desocupar">Desocupar</button>
+                        <button type="submit" name="action" value="reservar">Reservar</button>
+                    <?php endif; ?>
+                </form>
+            </div>
+        <?php endforeach; ?>
+    </div>
 </body>
 </html>
+
+
+

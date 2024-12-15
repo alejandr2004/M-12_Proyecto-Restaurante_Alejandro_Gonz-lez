@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['sala'])) {
 
             // Procesar o mostrar las mesas según sea necesario
             foreach ($mesas as $mesa) {
-                echo "Mesa ID: {$mesa['id_mesa']} - Estado: {$mesa['estado_mesa']}<br>";
+                // echo "Mesa ID: {$mesa['id_mesa']} - Estado: {$mesa['estado_mesa']}<br>";
             }
         } else {
             echo "No se ha encontrado ninguna sala con el nombre especificado.";

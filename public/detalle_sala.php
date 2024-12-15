@@ -8,6 +8,11 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     exit();
 }
 
+if ($_SESSION['rol_usuario'] != 'Administrador') {
+    header("Location: ../index.php");
+    exit();
+}
+
 // Obtener el nombre de la sala desde la URL
 $sala_nombre = isset($_GET['sala']) ? $_GET['sala'] : '';
 
@@ -43,7 +48,8 @@ $sala_nombre_completo = $sala_data['nombre_sala'];
     <!-- Botones para eliminar o modificar la sala -->
 <div class="action-buttons">
     <a href="eliminar_sala.php?sala=<?php echo $sala_nombre; ?>" class="action-button delete">Eliminar Sala</a>
-    <a href="modificar_sala.php?sala=<?php echo $sala_nombre; ?>" class="action-button modify">Modificar Sala</a>
+    <a href="modificar_sala.php?sala=<?php echo $sala_nombre; ?>" class="action-button modify">Modificar Mesa</a>
+    <a href="crear_mesas.php?sala=<?php echo $sala_nombre; ?>" class="action-button modify">Crear Mesa</a>
     <a href="crud_salas.php" class="action-button back">Volver al CRUD de Salas</a>
 </div>
 

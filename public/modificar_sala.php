@@ -1,76 +1,92 @@
 <?php
 session_start();
-include '../db/conexion.php';
+include_once "../db/conexion.php";
 
-// Verificamos que el usuario esté logueado
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+if ($_SESSION['rol_usuario'] != 'Administrador') {
     header("Location: ../index.php");
     exit();
 }
 
-// Obtener el id de la sala desde la URL
-$id_sala = isset($_GET['sala']) ? $_GET['sala'] : 0;
+// Verificar si se proporcionó una sala
+if (isset($_GET['sala'])) {
+    $nombre_sala = $_GET['sala'];
+    echo "Nombre de la sala: " . htmlspecialchars($nombre_sala) . "<br>";
 
-// Verificar que el id_sala es válido
-if ($id_sala <= 0) {
-    echo "ID de sala inválido.";
-    exit();
+    // Obtener el ID de la sala
+    $querySala = "SELECT id_sala FROM tbl_sala WHERE nombre_sala = :nombre_sala;";
+    $stmtSala = $conn->prepare($querySala);
+    $stmtSala->bindParam(':nombre_sala', $nombre_sala, PDO::PARAM_STR);
+    $stmtSala->execute();
+    $sala = $stmtSala->fetch(PDO::FETCH_ASSOC);
+
+    if ($sala) {
+        $id_sala = $sala['id_sala'];
+
+        // Obtener las mesas asociadas a la sala
+        $queryMesas = "SELECT id_mesa, num_sillas_mesa FROM tbl_mesa WHERE id_sala = :id_sala;";
+        $stmtMesas = $conn->prepare($queryMesas);
+        $stmtMesas->bindParam(':id_sala', $id_sala, PDO::PARAM_INT);
+        $stmtMesas->execute();
+        $mesas = $stmtMesas->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        echo "No se encontró la sala especificada.<br>";
+        $mesas = [];
+    }
+} else {
+    echo "No se especificó una sala.<br>";
+    $mesas = [];
 }
 
-// Obtener la cantidad actual de mesas en la sala seleccionada
-$sql_mesas = "SELECT COUNT(*) AS cantidad_mesas FROM tbl_mesa WHERE id_sala = :id_sala";
-$stmt_mesas = $conn->prepare($sql_mesas);
-$stmt_mesas->bindParam(':id_sala', $_SESSION['id_sala'], PDO::PARAM_INT);
-$stmt_mesas->execute();
-$mesas_actuales_data = $stmt_mesas->fetch(PDO::FETCH_ASSOC);
+// Procesar la actualización del número de sillas
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mesa']) && isset($_POST['num_sillas'])) {
+    $id_mesa = $_POST['mesa'];
+    $num_sillas = $_POST['num_sillas'];
 
-// Verificar si la consulta devolvió resultados
-if ($mesas_actuales_data === false) {
-    echo $_SESSION['id_sala'];
-    echo "No se pudo obtener la cantidad de mesas.";
-    exit();
-}
+    // Obtener el número actual de sillas de la mesa
+    $queryGetCurrentSillas = "SELECT num_sillas_mesa FROM tbl_mesa WHERE id_mesa = :id_mesa;";
+    $stmtGetCurrentSillas = $conn->prepare($queryGetCurrentSillas);
+    $stmtGetCurrentSillas->bindParam(':id_mesa', $id_mesa, PDO::PARAM_INT);
+    $stmtGetCurrentSillas->execute();
+    $currentSillas = $stmtGetCurrentSillas->fetch(PDO::FETCH_ASSOC);
 
-$mesas_actuales = $mesas_actuales_data['cantidad_mesas'];
+    if ($currentSillas) {
+        $currentNumSillas = $currentSillas['num_sillas_mesa'];
 
-// Consultar el nombre de la sala
-$sql_sala = "SELECT nombre_sala FROM tbl_sala WHERE id_sala = :id_sala";
-$stmt_sala = $conn->prepare($sql_sala);
-$stmt_sala->bindParam(':id_sala', $_SESSION['id_sala'], PDO::PARAM_INT);
-$stmt_sala->execute();
-$sala_data = $stmt_sala->fetch(PDO::FETCH_ASSOC);
+        // Calcular la diferencia de sillas
+        $diferenciaSillas = $num_sillas - $currentNumSillas;
 
-// Verificar si la consulta devolvió resultados
-if ($sala_data === false) {
-    echo "No se pudo obtener la información de la sala.";
-    exit();
-}
+        // Actualizar el número de sillas en la mesa
+        $queryUpdate = "UPDATE tbl_mesa SET num_sillas_mesa = :num_sillas WHERE id_mesa = :id_mesa;";
+        $stmtUpdate = $conn->prepare($queryUpdate);
+        $stmtUpdate->bindParam(':num_sillas', $num_sillas, PDO::PARAM_INT);
+        $stmtUpdate->bindParam(':id_mesa', $id_mesa, PDO::PARAM_INT);
 
-$sala_nombre = $sala_data['nombre_sala'];
+        // Actualizar el stock de sillas en la sala según la diferencia
+        if ($diferenciaSillas > 0) {
+            // Si el número de sillas aumenta, reducir el stock
+            $queryUpdateStock = "UPDATE tbl_stock SET cantidad_sillas = cantidad_sillas - :diferencia WHERE id_sala = :id_sala;";
+        } else {
+            // Si el número de sillas disminuye, aumentar el stock
+            $queryUpdateStock = "UPDATE tbl_stock SET cantidad_sillas = cantidad_sillas + :diferencia WHERE id_sala = :id_sala;";
+        }
 
-// Si el formulario ha sido enviado, actualizar el número de mesas
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $cantidad_mesas_nueva = $_POST['cantidad_mesas'];
+        $stmtUpdateStock = $conn->prepare($queryUpdateStock);
+        $stmtUpdateStock->bindParam(':diferencia', abs($diferenciaSillas), PDO::PARAM_INT);
+        $stmtUpdateStock->bindParam(':id_sala', $id_sala, PDO::PARAM_INT);
 
-    // Resumen de la modificación
-    $mensaje_resumen = "MESAS " . $mesas_actuales . " => " . $cantidad_mesas_nueva;
-    
-    // Actualizar la cantidad de mesas en la base de datos (si es necesario)
-    $sql_actualizar_mesas = "UPDATE tbl_sala SET capacidad_total = :cantidad_mesas WHERE id_sala = :id_sala";
-    $stmt_actualizar = $conn->prepare($sql_actualizar_mesas);
-    $stmt_actualizar->bindParam(':cantidad_mesas', $cantidad_mesas_nueva, PDO::PARAM_INT);
-    $stmt_actualizar->bindParam(':id_sala', $_SESSION['id_sala'], PDO::PARAM_INT);
-    $stmt_actualizar->execute();
+        // Ejecutar las actualizaciones
+        if ($stmtUpdate->execute() && $stmtUpdateStock->execute()) {
+            echo "<p>El número de sillas de la mesa {$id_mesa} ha sido actualizado a {$num_sillas} y el stock de sillas ha sido ajustado.</p>";
+        } else {
+            echo "<p>Error al actualizar el número de sillas o el stock.</p>";
+        }
 
-    // Insertar un nuevo registro en la tabla de stock
-    $sql_insert_stock = "INSERT INTO tbl_stock (id_sala, cantidad_mesas) VALUES (:id_sala, :cantidad_mesas)";
-    $stmt_insert_stock = $conn->prepare($sql_insert_stock);
-    $stmt_insert_stock->bindParam(':id_sala', $_SESSION['id_sala'], PDO::PARAM_INT);
-    $stmt_insert_stock->bindParam(':cantidad_mesas', $cantidad_mesas_nueva, PDO::PARAM_INT);
-    $stmt_insert_stock->execute();
-
-    // Mostrar el resumen de la modificación
-    echo "<p>Resumen de la modificación: " . $mensaje_resumen . "</p>";
+        // Recargar las mesas después de la actualización
+        header("Location: " . $_SERVER['PHP_SELF'] . "?sala=" . urlencode($nombre_sala));
+        exit;
+    } else {
+        echo "<p>No se encontró la mesa especificada.</p>";
+    }
 }
 ?>
 
@@ -78,19 +94,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Modificar Sala - <?php echo $sala_nombre; ?></title>
-    <link rel="stylesheet" href="../css/modificar_sala.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesas de la Sala</title>
+    <link rel="stylesheet" href="../css/modificar-sala.css">
 </head>
 <body>
-    <h1>Modificar Sala: <?php echo $sala_nombre; ?></h1>
+    <div class="container">
+        <?php if (!empty($mesas)): ?>
+            <form action="" method="POST" class="form-container">
+                <label for="mesa">Seleccione una mesa:</label>
+                <select name="mesa" id="mesa" required class="select-box">
+                    <option value="" disabled selected>Seleccione una mesa</option>
+                    <?php foreach ($mesas as $mesa): ?>
+                        <option value="<?= htmlspecialchars($mesa['id_mesa']) ?>">
+                            Mesa <?= htmlspecialchars($mesa['id_mesa']) ?> (<?= htmlspecialchars($mesa['num_sillas_mesa']) ?> sillas)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <label for="num_sillas">Nuevo número de sillas:</label>
+                <input type="number" name="num_sillas" id="num_sillas" min="1" required class="input-field">
+                <button type="submit" class="submit-button">Actualizar</button>
+            </form>
+        <?php else: ?>
+            <p>No hay mesas disponibles para esta sala.</p>
+        <?php endif; ?>
 
-    <form method="POST">
-        <label for="cantidad_mesas">Cantidad de Mesas:</label>
-        <input type="number" name="cantidad_mesas" value="<?php echo $mesas_actuales; ?>" required>
-
-        <input type="submit" value="Actualizar">
-    </form>
-
-    <a href="crud_salas.php">Volver al CRUD de Salas</a>
+        <!-- Botón para volver -->
+        <form action="detalle_sala.php" method="get">
+            <input type="hidden" name="sala" value="<?= htmlspecialchars($nombre_sala) ?>">
+            <button type="submit" class="back-button">Volver</button>
+        </form>
+    </div>
 </body>
 </html>
+
+
+

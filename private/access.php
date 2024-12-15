@@ -37,6 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['loggedin'] = true;
                 $_SESSION['usuario_id'] = $result['id_usuario'];
                 $_SESSION['nombre_usuario'] = $result['nombre_usuario'];
+                $_SESSION['rol_usuario'] = $result['rol_usuario'];
 
                 echo $_SESSION['usuario_id'];
 
@@ -47,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Redirigir a la página correspondiente según el rol del usuario
                 if ($result['rol_usuario'] == "Administrador") {
-                    header("Location: ../public/CRUD_salas.php");
+                    header("Location: ../public/admin_dashboard.php");
                 } else if ($result['rol_usuario'] == "Camarero") {
                     header("Location: ../public/dashboard.php");
                 } else {

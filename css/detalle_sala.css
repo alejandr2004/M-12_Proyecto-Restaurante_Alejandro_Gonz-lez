@@ -67,12 +67,11 @@ button:hover {
 }
 
 /* Estilo para los botones de acción */
-/* Estilos para los botones de acción */
 .action-buttons {
     display: flex;
-    justify-content: flex-start; /* Alinea los botones a la izquierda */
-    gap: 10px; /* Espacio entre los botones */
-    margin-bottom: 20px; /* Espacio debajo de los botones */
+    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 .action-button {
@@ -92,7 +91,7 @@ button:hover {
 }
 
 .action-button.delete {
-    background-color: #dc3545; /* Color para el botón de eliminar */
+    background-color: #dc3545;
 }
 
 .action-button.delete:hover {
@@ -100,7 +99,7 @@ button:hover {
 }
 
 .action-button.modify {
-    background-color: #ffc107; /* Color para el botón de modificar */
+    background-color: #ffc107;
 }
 
 .action-button.modify:hover {
@@ -108,9 +107,46 @@ button:hover {
 }
 
 .action-button.back {
-    background-color: #28a745; /* Color para el botón de volver */
+    background-color: #28a745;
 }
 
 .action-button.back:hover {
     background-color: #218838;
+}
+
+/* Estilos Responsivos */
+@media screen and (max-width: 768px) {
+    /* Ajustes para las mesas */
+    .mesa-card {
+        width: 45%;  /* Dos tarjetas por fila */
+    }
+
+    /* Ajustar botones de acción */
+    .action-buttons {
+        flex-direction: column; /* Los botones en columna */
+        align-items: flex-start; /* Alinear los botones a la izquierda */
+    }
+
+    .action-button {
+        width: 100%; /* Los botones ocupan todo el ancho */
+        margin-bottom: 10px; /* Espacio entre botones */
+    }
+
+    /* Ajustes de la cabecera */
+    h1 {
+        font-size: 24px; /* Reducir tamaño del texto en móviles */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    /* Ajustes aún más para pantallas muy pequeñas */
+    .mesa-card {
+        width: 100%;  /* Solo una tarjeta por fila */
+        margin: 10px 0;  /* Márgenes más pequeños */
+    }
+
+    .action-button {
+        font-size: 14px; /* Reducir el tamaño de los botones */
+        padding: 8px 16px; /* Menos relleno */
+    }
 }

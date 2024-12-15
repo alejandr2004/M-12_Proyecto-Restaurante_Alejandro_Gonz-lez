@@ -5,6 +5,11 @@ if (!isset($_SESSION['loggedin'])) {
     header("Location: ../index.php");
     exit();
 }
+
+if ($_SESSION['rol_usuario'] != 'Camarero') {
+    header("Location: ../index.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -46,19 +51,19 @@ if (!isset($_SESSION['loggedin'])) {
     <div class="option terraza">
         <h2>Terraza</h2>
         <div class="button-container">
-            <a href="./choose_terraza.php" class="select-button">Seleccionar</a>
+            <a href="select_salas.php?tipo=terraza" class="select-button">Seleccionar</a>
         </div>
     </div>
     <div class="option comedor">
         <h2>Comedor</h2>
         <div class="button-container">
-            <a href="./choose_comedor.php" class="select-button">Seleccionar</a>
+            <a href="select_salas.php?tipo=comedor" class="select-button">Seleccionar</a>
         </div>
     </div>
     <div class="option privadas">
         <h2>Sala privada</h2>
         <div class="button-container">
-            <a href="./choose_privada.php" class="select-button">Seleccionar</a>
+            <a href="select_salas.php?tipo=privada" class="select-button">Seleccionar</a>
         </div>
     </div>
 </div>

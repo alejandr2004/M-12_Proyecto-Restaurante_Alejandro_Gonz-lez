@@ -8,6 +8,11 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     exit();
 }
 
+if ($_SESSION['rol_usuario'] != 'Administrador') {
+    header("Location: ../index.php");
+    exit();
+}
+
 // Obtener el número total de salas
 $sql = "SELECT COUNT(*) AS total FROM tbl_sala";
 $stmt = $conn->prepare($sql);
@@ -121,9 +126,66 @@ $salas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .pagination .active {
             background-color: #0056b3;
         }
+
+        /* Botón Crear nueva sala */
+        .create-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .create-button:hover {
+            background-color: #218838;
+        }
+
+        /* Botón Cerrar sesión */
+        .logout-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+
+        /* Botón Volver */
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
     </style>
 </head>
 <body>
+    <!-- Botones de acción (arriba de la página) -->
+    <div class="d-flex justify-content-start mb-4">
+        <a href="crear_sala.php" class="create-button">Crear Nueva Sala</a>
+        <a href="../private/logout.php" class="logout-button">Cerrar sesión</a>
+        <a href="admin_dashboard.php" class="back-button">Volver</a>
+    </div>
+
     <h1>Gestión de Salas</h1>
 
     <div class="container">
@@ -154,3 +216,4 @@ $salas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 </body>
 </html>
+
